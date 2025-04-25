@@ -204,3 +204,136 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
   "message": "Unauthorized"
 }
 ```
+
+# Captain Registration Endpoint Documentation
+
+## Endpoint
+
+**POST** `/captains/register`
+
+## Description
+
+This endpoint registers a new captain (driver) with their vehicle information. It:
+
+- Validates the input data using `express-validator` middleware
+- Checks for existing email to prevent duplicates
+- Hashes the password using bcrypt
+- Creates a new captain profile with vehicle details
+- Generates a JWT token for authentication
+
+## Request Data Requirements
+
+The endpoint expects a JSON request body with the following structure:
+
+```json
+{
+  "fullname": {
+    "firstname": "string, required, minimum 3 characters",
+    "lastname": "string, optional, minimum 3 characters"
+  },
+  "email": "string, required, must be a valid email",
+  "password": "string, required, minimum 6 characters",
+  "vehicle": {
+    "vehicleType": "enum: car, motorcycle, or auto",
+    "color": "string, required",
+    "plateNumber": "string, required",
+    "capacity": "number, required, minimum 1"
+  },
+  "location": {
+    "latitude": "number, optional, range: -90 to 90",
+    "longitude": "number, optional, range: -180 to 180"
+  },
+  "status": "enum: active or inactive, default: inactive"
+}
+```
+
+## Validation Rules
+
+- **Email**: Must be unique and in valid email format
+- **First Name**: Minimum 3 characters
+- **Password**: Minimum 6 characters
+- **Vehicle Type**: Must be one of: "car", "motorcycle", "auto"
+- **Vehicle Capacity**: Must be a positive integer
+- **Location Coordinates**: Must be valid latitude/longitude values (if provided)
+
+## Response Status Codes
+
+- **201 Created:**  
+  Successfully registered captain
+
+- **409 Conflict:**  
+  Email already exists
+
+- **422 Unprocessable Entity:**  
+  Validation errors
+
+## Example Request
+
+```json
+POST /captains/register
+Content-Type: application/json
+
+{
+  "fullname": {
+    "firstname": "John",
+    "lastname": "Doe"
+  },
+  "email": "john.driver@example.com",
+  "password": "securepass123",
+  "vehicle": {
+    "vehicleType": "car",
+    "color": "black",
+    "plateNumber": "ABC123",
+    "capacity": 4
+  }
+}
+```
+
+## Example Response (Success)
+
+```json
+{
+  "status": "success",
+  "data": {
+    "captain": {
+      "_id": "507f1f77bcf86cd799439011",
+      "fullname": {
+        "firstname": "John",
+        "lastname": "Doe"
+      },
+      "email": "john.driver@example.com",
+      "status": "inactive",
+      "vehicle": {
+        "vehicleType": "car",
+        "color": "black",
+        "plateNumber": "ABC123",
+        "capacity": 4
+      }
+    },
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  }
+}
+```
+
+## Example Response (Error)
+
+```json
+{
+  "status": "fail",
+  "message": "Captain with this email already exists"
+}
+```
+
+OR
+
+```json
+{
+  "errors": [
+    {
+      "msg": "Vehicle type must be either car, motorcycle, or auto",
+      "param": "vehicle.vehicleType",
+      "location": "body"
+    }
+  ]
+}
+```
