@@ -1,6 +1,7 @@
 const userModel = require('../models/user_models')
 const userService = require('../services/user.service');
 const { validationResult } = require('express-validator');
+const blacklistTokenModel = require('../models/blacklistToken.models');
 
 module.exports.registerUser = async (req, res,next) => {
 
@@ -23,9 +24,9 @@ module.exports.registerUser = async (req, res,next) => {
     console.log("Saving user to MongoDB:", user)
 
     try {
-      await user.save()
+        await user.save()
     } catch (err) {
-      console.error("❌ Error saving user:", err)
+        console.error("❌ Error saving user:", err)
     }
 
 
@@ -71,6 +72,8 @@ module.exports.loginUser = async (req, res) => {
 
     const token = await user.generateAuthToken();
 
+    res.cookie('token', token);
+
     res.status(200).json({
         status: 'success',
         data: {
@@ -81,5 +84,22 @@ module.exports.loginUser = async (req, res) => {
                 token,
             },
         },
+    });
+}
+
+module.exports.getUserProfile = async (req, res) => {
+
+
+    res.status(200).json(req.user);
+}
+
+module.exports.logoutUser = async (req, res) => {
+    res.clearCookie('token');
+    const token = req.cookies.token || (req.headers.authorization && req.headers.authorization.split(" ")[1]);
+    await blacklistTokenModel.create({ token });
+
+    res.status(200).json({
+        status: 'success',
+        message: 'Logged out successfully',
     });
 }

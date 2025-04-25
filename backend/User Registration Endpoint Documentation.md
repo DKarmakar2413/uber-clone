@@ -104,3 +104,103 @@ Content-Type: application/json
   "message": "Invalid email or password"
 }
 ```
+
+# User Profile Endpoint Documentation
+
+## Endpoint
+
+**GET** `/users/profile`
+
+## Description
+
+This endpoint retrieves the authenticated user's profile. It:
+
+- Verifies the JWT token from cookies or Authorization header
+- Uses the auth middleware to validate the user's session
+- Returns the user's profile information
+
+## Authentication
+
+Requires a valid JWT token either:
+- In the cookies as `token`
+- In Authorization header as `Bearer <token>`
+
+## Response Status Codes
+
+- **200 OK:**  
+  Successfully retrieved user profile
+
+- **401 Unauthorized:**  
+  Invalid or missing token, or blacklisted token
+
+## Example Request
+
+```bash
+GET /users/profile
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+## Example Response (Success)
+
+```json
+{
+  "_id": "507f1f77bcf86cd799439011",
+  "fullname": {
+    "firstname": "John",
+    "lastname": "Doe"
+  },
+  "email": "john.doe@example.com"
+}
+```
+
+# User Logout Endpoint Documentation
+
+## Endpoint
+
+**GET** `/users/logout`
+
+## Description
+
+This endpoint logs out the current user. It:
+
+- Clears the token cookie
+- Adds the current token to blacklist to prevent reuse
+- Requires authentication to ensure only logged-in users can logout
+
+## Authentication
+
+Requires a valid JWT token either:
+- In the cookies as `token`
+- In Authorization header as `Bearer <token>`
+
+## Response Status Codes
+
+- **200 OK:**  
+  Successfully logged out
+
+- **401 Unauthorized:**  
+  Invalid or missing token
+
+## Example Request
+
+```bash
+GET /users/logout
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+## Example Response (Success)
+
+```json
+{
+  "status": "success",
+  "message": "Logged out successfully"
+}
+```
+
+## Example Response (Error)
+
+```json
+{
+  "message": "Unauthorized"
+}
+```
